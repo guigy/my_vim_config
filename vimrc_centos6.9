@@ -1,0 +1,188 @@
+set nocompatible	" 关闭vi兼容模式
+set backspace=2		"解决vim下面删除键不能用的问题
+syntax on 		"开启语法高亮
+
+"filetype的默认属性：detection:ON plugin:OFF indent:OFF
+filetype on		"文件类型检测
+filetype indent on	"为不同文件类型选择合适的缩进方式
+filetype plugin on	"加载该文件类型相关的插件
+
+" 新文件自动识别文件类型添加文件头
+autocmd BufNewFile *.php,*.cpp,*.cc,*.c,*.hpp,*.h,*.sh,*.py exec ":call SetTitle()" 
+func SetTitle() 
+	if expand("%:e") == 'sh'
+		call setline(1,"\#!/bin/bash") 
+		call append(line("."), "") 	
+	elseif expand("%:e") == 'php'
+		call setline(1,"<?php")
+		call append(line("."), "")
+	elseif expand("%:e") == 'py'
+		call setline(1,"#!/usr/bin/env python")
+		call append(line("."),"# coding=utf-8")
+		call append(line(".")+1, "") 
+	elseif expand("%:e") == 'cpp'
+		call setline(1,"#include <iostream>") 
+		call append(line("."), "") 
+	elseif expand("%:e") == 'cc'
+		call setline(1,"#include <iostream>") 
+		call append(line("."), "") 
+	elseif expand("%:e") == 'c'
+		call setline(1,"#include <stdio.h>") 
+		call append(line("."), "") 
+	elseif expand("%:e") == 'h'
+		call setline(1, "#pragma once")
+	elseif expand("%:e") == 'hpp'
+		call setline(1, "#pragma once")
+	endif
+endfunc 
+autocmd BufNewFile * normal G
+
+
+
+" 插件管理及配置
+
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+" 插件管理工具
+Plugin 'VundleVim/Vundle.vim'
+" Vundle常用指令
+" :PluginList                       列出已经安装的插件
+" :PluginInstall                    安装所有配置文件中的插件
+" :PluginInstall!                   更新所有插件
+" :PluginSearch                     搜索插件
+" :PluginClean!                     根据配置文件删除插件
+
+" airline主题
+Plugin 'vim-airline/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
+let g:airline_theme='bubblegum'
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#left_sep = ' '
+let g:airline#extensions#tabline#left_alt_sep = '|'
+let g:airline_powerline_fonts = 1
+
+" 侧边栏显示相关函数定义等
+Plugin 'majutsushi/tagbar'
+let g:tagbar_width = 30
+let g:tagbar_right = 1
+nmap <F8> :TagbarToggle<CR>
+
+" 侧边栏，tt打开或者关闭
+Plugin 'scrooloose/nerdtree'
+nnoremap tt :exe 'NERDTreeToggle'<CR>
+let NERDTreeIgnore=['.\.obj$', '.\.o$', '.\.svn$', '.\.so$', '.\.exe$', '.\.git$', '.\.swp$']
+let NERDTreeChDirMode=1
+let NERDTreeDirArrors=1
+let NERDTreeWinpos="left"
+let NERDTreeWinSize = 20
+let NERDTreeQuitOnOpen=1
+autocmd WinEnter * call s:CloseIfOnlyNerdTreeLeft()
+function! s:CloseIfOnlyNerdTreeLeft()
+	if exists("t:NERDTreeBufName")
+		if bufwinnr(t:NERDTreeBufName) != -1
+			if winnr("$") == 1
+				q
+			endif
+		endif
+	endif
+endfunction
+
+" 语法检查
+Plugin 'vim-syntastic/syntastic'
+set statusline+=%#warningmsg#
+set statusline+=%{SyntasticStatuslineFlag()}
+set statusline+=%*
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+
+" 各种符号自动补全
+Plugin 'jiangmiao/auto-pairs'
+
+" 自动补全
+Plugin 'vim-scripts/AutoComplPop'
+let g:AutoComplPop_Behavior = { 
+			\ 'php': [ {'command' : "\<C-x>\<C-o>",
+			\ 'pattern' : ".",
+			\ 'repeat' : 0}
+			\ ] 
+			\ }
+autocmd FileType php set omnifunc=phpcomplete#CompletePHP 
+
+" 主题插件
+Bundle 'altercation/vim-colors-solarized'
+Bundle 'morhetz/gruvbox'
+Bundle 'iCyMind/NeoSolarized'
+
+" 快速切换主题插件
+Plugin 'chxuan/change-colorscheme'
+map <F11> :NextColorScheme<CR>
+imap <F11> <ESC> :NextColorScheme<CR>
+map <F12> :PreviousColorScheme<CR>
+imap <F12> <ESC> :PreviousColorScheme<CR>
+
+" 快速添加注释插件 \cc 注释  \cu取消注释
+Bundle 'scrooloose/nerdcommenter'
+let g:NERDSpaceDelims = 1
+let g:NERDCompactSexyComs = 1
+let g:NERDDefaultAlign = 'left'
+let g:NERDAltDelims_java = 1
+let g:NERDCustomDelimiters = { 'c': { 'left': '/**','right': '*/'  }  }
+let g:NERDCommentEmptyLines = 1
+let g:NERDTrimTrailingWhitespace = 1
+
+" 启动页面
+Plugin 'mhinz/vim-startify'
+let g:startify_custom_header = [
+			\ '   __      __  _                _   ______     _________ ',
+			\ '   \ \    / / (_)              | | |  ____ \  |  _______|',
+			\ '    \ \  / /   _   __ _____    | | | |    | \ | |_______ ',
+			\ '     \ \/ /   | | |  _ ` _  \  | | | |    | | |  _______|',
+			\ '      \  /    | | | | | | | |  | | | |___ | | | |_______',
+			\ '       \/     |_| |_| |_| |_|  |_| |_______/  |_________|',
+			\ '',
+			\ '	快捷键:',
+			\ '		可执行文件的运行	:	F5	',
+			\ '		打开树状目录结构	:	tt	',
+			\ '		快速注释／取消注释	:	\cc和\cu',
+			\]
+
+let g:startify_custom_footer = [
+			\ '',
+			\ '   Mail:guangyong.gui@qq.com',
+			\ '   Ctrl+php Ctre+py为快捷键！',
+			\ '',
+			\]
+call vundle#end()
+
+
+
+
+set nobackup          " 不生成备份文件"
+set laststatus=2	" 总是显示状态行
+set nu 			" 显示行号
+set background=dark	" 设置vim背景颜色	
+set t_Co=256		" vim背景颜色自动识别
+colorscheme gruvbox	" 设置主题
+
+" 自定义按键 执行php，执行python等
+map <F5> :call Run()<CR>
+func! Run()
+	exec "w"
+	if &filetype == 'sh'
+		:!time bash %
+	elseif &filetype == 'php'
+		exec "!time php %"
+	elseif &filetype == 'python'
+		exec "!time python %"
+	endif
+endfunc
+
+" 自动切换目录为当前编辑文件所在目录
+autocmd BufRead,BufNewFile,BufEnter * cd %:p:h
+
+" Backupdir settings
+set backupdir=~/.vim/backup/
+set directory=~/.vim/swap/
